@@ -12,10 +12,16 @@ from sklearn.svm import LinearSVC, SVC
 import warnings
 
 warnings.filterwarnings('ignore')
-db_host = 'localhost'
-db_user = 'sec_user'
-db_pass = 'Password'
-db_name = 'securities_master'
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+db_host = os.getenv("db_host")
+db_name = os.getenv("db_name")
+db_pass = os.getenv("db_pass")
+db_user = os.getenv("db_user")
+
+
 con = msc.connect(host=db_host, user=db_user, password=db_pass, db=db_name)
 
 

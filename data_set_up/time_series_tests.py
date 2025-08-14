@@ -12,13 +12,17 @@ import matplotlib.dates as mdates
 import datetime
 import warnings
 warnings.filterwarnings('ignore')
+import os
+from dotenv import load_dotenv
 
-db_host = 'localhost'
-db_user = 'sec_user'
-db_pass = 'Damilare20$'
-db_name = 'securities_master'
-plug ='caching_sha2_password'
-con = msc.connect(host=db_host, user=db_user, password=db_pass, db=db_name, auth_plugin= plug)
+load_dotenv()
+db_host = os.getenv("db_host")
+db_name = os.getenv("db_name")
+db_pass = os.getenv("db_pass")
+db_user = os.getenv("db_user")
+
+
+con = msc.connect(host=db_host, user=db_user, password=db_pass, db=db_name)
 
 
 def obtain_data_from_sec_master(symbol_id, start_date, end_date):
