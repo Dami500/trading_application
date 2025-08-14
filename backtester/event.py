@@ -40,3 +40,4 @@ class order_event(event):
         self.amount = amount
         self.price = price
         self.date = date
+
