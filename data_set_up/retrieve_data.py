@@ -9,7 +9,7 @@ db_pass = 'Damilare20$'
 db_name = 'securities_master'
 con = msc.connect(host=db_host, user=db_user, password=db_pass, db=db_name)
 
-def get_prices_id(tickers):
+def get_prices_id(tickers, con):
     """
     Locates the corresponding symbol ID for each ticker in the list of tickers
     returns a pandas dataframe for IDs
@@ -26,23 +26,23 @@ def get_prices_id(tickers):
         symbols[ticker] = df.iloc[0,0]
     return symbols
 
-def get_prices(locations):
+def get_prices(locations, con, start_date, end_date):
     """
     Makes use of the symbol_id list to return dataframes of the prices of those assets
     """
     dataframes = []
     for id in locations.keys():
-        select_str ="""SELECT *
+        select_str =f"""SELECT *
                        from securities_master.daily_price
-                       where securities_master.daily_price.symbol_id = '%s'
-                    """ % locations[id]
+                       where securities_master.daily_price.symbol_id = '{locations[id]}' and securities_master.daily_price.price_date >='{start_date}'
+                       and securities_master.daily_price.price_date <= '{end_date}'
+                    """
         data = pd.read_sql_query(select_str, con)
         specific_data = data[['symbol_id', 'price_date', 'open_price', 'high_price', 'low_price', 'close_price', 'volume']]
         specific_data.rename(columns={'symbol_id':id}, inplace=True)
         dataframes.append(specific_data)
-    for dataframe in dataframes:
-        print(dataframe)
+    return dataframes
 
-symbols = get_prices_id(['AAPL', 'GOOG', 'SPY', 'LLY'])
+symbols = get_prices_id(['AAPL', 'GOOG', 'LLY'], con)
 print(symbols)
-get_prices(symbols)
+print(get_prices(symbols, con, "2022-05-01", "2024-05-01"))
