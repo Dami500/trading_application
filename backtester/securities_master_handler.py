@@ -81,11 +81,11 @@ class securities_master_handler(DataHandler):
     def generate_day(self, day)-> Dict[str[datetime, float, float, float, float, float, float]]:
         return self.total_load[day]
 
-    def add_market_event(self, i):
+    def add_market_event(self, day):
         """
         adds a new day to the queue
         """
-        self.Queue.put(market_event(self.total_load[i]))
+        self.Queue.put(market_event(self.total_load[day]))
 
 
 
