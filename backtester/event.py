@@ -34,10 +34,24 @@ class order_event(event):
     """
     This class represents an order that is to be executed and accounted for by the portfolio handler
     """
-    def __init__(self, amount, price, date, direction):
+    def __init__(self, stock, amount, price, date, direction):
+        self.stock = stock
         self.type = "Order"
         self.direction = direction
         self.amount = amount
         self.price = price
+        self.date = date
+
+class fill_event(event):
+    """
+    This class represents a filled event. Thus after an order has been made, the exchange respondes with a filled event
+    """
+    def __init__(self, amount, price, direction, commission, date):
+        self.type = "Fill"
+        self.amount = amount
+        self.commission = commission
+        self.price = price
+        self.fill_cost = 0
+        self.direction = direction
         self.date = date
 
