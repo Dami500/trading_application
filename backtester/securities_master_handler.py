@@ -4,6 +4,9 @@ import pandas as pd
 from retrieve_data import get_prices_id, get_prices
 from event import market_event
 import gc
+import queue
+import datetime
+from pandas import DataFrame
 
 class DateMismatchError(Exception):
     def __init__(self):
@@ -16,8 +19,8 @@ class securities_master_handler(DataHandler):
     This is the data handler that uses the securites master database
     to load data and support the trading system 
     """
-    def __init__(self, host: string, user: string, password: string, db_name: string, symbols: list, 
-    queue: Queue, start_date: datetime, end_date: datetime):
+    def __init__(self, host: str, user: str, password: str, db_name: str, symbols: list, 
+    queue: queue, start_date: datetime, end_date: datetime):
         self.host = host
         self.user = user
         self.password = password
@@ -27,7 +30,7 @@ class securities_master_handler(DataHandler):
         self.start_date = start_date
         self.end_date = end_date
         self.seen_data = []
-        self.total_load = self.transform_into_daily_data()
+        self.total_load = None
     
     def connect(self):
         """
@@ -36,21 +39,20 @@ class securities_master_handler(DataHandler):
         try:
             self.con = msc.connect(host= self.host, user=self.user, password=self.password, db=self.db_name)
         except Exception as e:
-            print(f"Warning! Database connection Error: {e.message}")
-        return con
+            print(f"Warning! Database connection Error: {e}")
     
-    def load(self, start_date: datetime, end_date: datetime)-> List[Dataframe]:
+    def load(self)-> list[DataFrame]:
         """
         Loads data for each ticker into a list of pandas dataframes, each one being
         information for each ticker.
         """
         try:
             ids = get_prices_id(self.symbols, self.con)
-            return get_prices(ids, self.con, start_date, end_date)
+            return get_prices(ids, self.con, self.start_date, self.end_date)
         except Exception as e:
-            print(f"Error! Database Loading Error: {e.message}")
+            print(f"Error! Database Loading Error: {e}")
     
-    def transform_into_daily_data(self)-> List[Dict[str[datetime, float, float, float, float, float, float]]]:
+    def transform_into_daily_data(self)->  list[dict[str, tuple[datetime, float, float, float, float, float, float]]]:
         """
         This transforms the data into a list of dictionaries. Each one represents a new trading day.
         Each dictionary also contains multiple tickers
@@ -58,7 +60,7 @@ class securities_master_handler(DataHandler):
         with each tickers date, open, high, low, close prices and volume.
         """
         daily_data = []
-        dataframes  = self.load(self.start_date, self.end_date)
+        dataframes  = self.load()
         for i in range(dataframes[0].shape[0]):
             # represents todays prices
             today = {}
@@ -75,10 +77,10 @@ class securities_master_handler(DataHandler):
         for dataframe in dataframes:
             del dataframe
             gc.collect()
-        
-        return today
+        self.total_load = daily_data
+        return daily_data
 
-    def generate_day(self, day)-> Dict[str[datetime, float, float, float, float, float, float]]:
+    def generate_day(self, day)-> dict[str, tuple[datetime, float, float, float, float, float, float]]:
         return self.total_load[day]
 
     def add_market_event(self, day):
@@ -88,4 +90,17 @@ class securities_master_handler(DataHandler):
         self.Queue.put(market_event(self.total_load[day]))
 
 
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+db_host = os.getenv("db_host")
+db_name = os.getenv("db_name")
+db_pass = os.getenv("db_pass")
+db_user = os.getenv("db_user")
+print(db_host, db_user, db_pass, db_name)
+AAPL = securities_master_handler(host = db_host, user = db_user, password = db_pass, db_name = db_name, symbols = ["AAPL"]
+, queue = queue, start_date = "2010-05-12", end_date = "2020-06-13")
+AAPL.connect()
+AAPL.transform_into_daily_data()
+print(AAPL.generate_day(1))

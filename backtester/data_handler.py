@@ -1,3 +1,6 @@
+from queue import Queue
+
+
 class DataHandler:
     """
     This is an Abstract base Class of the data handler of this trading system.
