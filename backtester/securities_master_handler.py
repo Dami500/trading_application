@@ -87,8 +87,7 @@ class securities_master_handler(DataHandler):
         """
         adds a new day to the queue
         """
-        self.Queue.put(market_event(self.total_load[day]))
-
+        self.queue.put(market_event(self.total_load[day]))
 
 import os
 from dotenv import load_dotenv
@@ -98,7 +97,6 @@ db_host = os.getenv("db_host")
 db_name = os.getenv("db_name")
 db_pass = os.getenv("db_pass")
 db_user = os.getenv("db_user")
-print(db_host, db_user, db_pass, db_name)
 AAPL = securities_master_handler(host = db_host, user = db_user, password = db_pass, db_name = db_name, symbols = ["AAPL"]
 , queue = queue, start_date = "2010-05-12", end_date = "2020-06-13")
 AAPL.connect()

@@ -1,5 +1,5 @@
 from event import order_event, fill_event
-
+from queue import Queue
 
 class exchange:
     """
